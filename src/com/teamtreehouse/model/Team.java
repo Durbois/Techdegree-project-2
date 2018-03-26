@@ -15,6 +15,9 @@ public class Team implements Comparable, Serializable {
     this.coach = coach;
   }
 
+  public Team() {
+  }
+
   public String getName() {
     return name;
   }

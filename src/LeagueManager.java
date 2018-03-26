@@ -18,6 +18,7 @@ public class LeagueManager {
   public static final String INDEX_OUT_OF_BOUND = "Index out of bound";
   public static final String EXPERIENCED = "Experienced";
   public static final String INEXPERIENCED = "Inexperienced";
+  public static final String ONLY_NUMBER_ARE_ALLOW = "Only numbers are allow";
   public static List<Player> playersToRegister = new ArrayList<>();
   public static List<Player> availablePlayers = new ArrayList<>(Arrays.asList(Players.load()));
 
@@ -41,6 +42,7 @@ public class LeagueManager {
       System.out.println("Roster - View roster");
       System.out.println("Registration - Add player to waiting list");
       System.out.println("Replace - Remove player from the League and replace it with the next player from the waiting list");
+      System.out.println("Build - Build fair team automatically");
       System.out.println("Quit - Exits the program");
       System.out.println("--------------------------");
 
@@ -65,6 +67,8 @@ public class LeagueManager {
             System.out.println(INDEX_OUT_OF_BOUND);
           }catch (IndexOutOfBoundsException e) {
             System.out.println(INDEX_OUT_OF_BOUND);
+          }catch (NumberFormatException e){
+            System.out.println(ONLY_NUMBER_ARE_ALLOW);
           }
           break;
         case "remove":
@@ -98,13 +102,13 @@ public class LeagueManager {
           }
           break;
         case "balance":
-            try{
-              reportLeagueBalance(teams);
-            }catch (ArrayIndexOutOfBoundsException e) {
-              System.out.println(INDEX_OUT_OF_BOUND);
-            }catch (IndexOutOfBoundsException e) {
-              System.out.println(INDEX_OUT_OF_BOUND);
-            }
+          try{
+            reportLeagueBalance(teams);
+          }catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println(INDEX_OUT_OF_BOUND);
+          }catch (IndexOutOfBoundsException e) {
+            System.out.println(INDEX_OUT_OF_BOUND);
+          }
           break;
         case "roster":
           try{
@@ -123,9 +127,44 @@ public class LeagueManager {
             System.out.println("There are no player in the waiting list");
           }
           break;
+        case "build":
+
+          if (availablePlayers.size() < MAX_PLAYERS ){
+            System.out.println("No enough players for a new team building...");
+            System.out.println("Please select another option.");
+            return;
+          }
+
+          Collections.shuffle(availablePlayers);
+
+          System.out.print("What is the team name? ");
+          String teamName = scanner.nextLine();
+          System.out.print("What is the coach name? ");
+          String coachName = scanner.nextLine();
+          Team team = new Team(teamName, coachName);
+          teams.add(team);
+
+          System.out.println("Automatically Team Building...");
+
+          List<Player> availablePlayersCopy = new ArrayList<>(availablePlayers);
+
+          for(Player player : availablePlayersCopy){
+            int inches = player.getHeightInInches();
+            for(Player teamPlayer : team.getTeamPlayers()){
+              inches = inches + teamPlayer.getHeightInInches();
+            }
+            double averageHeight = inches / (team.getTeamPlayers().size() + 1 );
+            if((averageHeight > 42 && averageHeight < 45) && team.getTeamPlayers().size() < MAX_PLAYERS){
+              team.getTeamPlayers().add(player);
+              availablePlayers.remove(player);
+              System.out.printf("Available Players %d%n", availablePlayers.size());
+            }
+          }
+          System.out.printf("Team building for %s completed.%n", team.getName());
+          break;
         case "quit":
           System.out.println("Bye!");
-    }
+      }
     }
   }
 
@@ -143,8 +182,8 @@ public class LeagueManager {
     int option = Integer.parseInt(scanner.nextLine());
     Player player = availablePlayers.get(option - 1);
     System.out.printf("%s %s will be replaced by %s %s%n",
-                      player.getFirstName(), player.getLastName(),
-                      playersToRegister.get(0).getFirstName(), playersToRegister.get(0).getLastName());
+        player.getFirstName(), player.getLastName(),
+        playersToRegister.get(0).getFirstName(), playersToRegister.get(0).getLastName());
     availablePlayers.set((option - 1), playersToRegister.get(0));
     playersToRegister.remove(0);
   }
@@ -177,9 +216,9 @@ public class LeagueManager {
     String coach = scanner.nextLine();
 
     Team team = teams.stream()
-                     .filter(t -> t.getCoach().equals(coach))
-                     .findFirst()
-                     .get();
+        .filter(t -> t.getCoach().equals(coach))
+        .findFirst()
+        .get();
 
     System.out.printf("Players of the team %s %n", team.getName());
     for(Player player : team.getTeamPlayers()){
@@ -197,19 +236,19 @@ public class LeagueManager {
         int numberExperiencedPlayers = 0;
         int numberInexperiencedPlayers = 0;
         for(Player player : team.getTeamPlayers()){
-           if(player.isPreviousExperience()){
-              numberExperiencedPlayers++;
-           }else {
-             numberInexperiencedPlayers++;
-           }
+          if(player.isPreviousExperience()){
+            numberExperiencedPlayers++;
+          }else {
+            numberInexperiencedPlayers++;
+          }
         }
         reports.put(EXPERIENCED, numberExperiencedPlayers);
         reports.put(INEXPERIENCED, numberInexperiencedPlayers);
         double percentage = (numberExperiencedPlayers * 100)/team.getTeamPlayers().size();
         System.out.printf("Team %s coached by %s has %d experienced players and %d inexperienced players, %.1f %% of experienced players%n"
-                          , team.getName(), team.getCoach()
-                          , reports.get(EXPERIENCED), reports.get(INEXPERIENCED)
-                          , percentage);
+            , team.getName(), team.getCoach()
+            , reports.get(EXPERIENCED), reports.get(INEXPERIENCED)
+            , percentage);
       }
     }
   }
@@ -220,12 +259,12 @@ public class LeagueManager {
     System.out.println("List of players by height");
 
     long count = playersList.stream()
-               .filter((p -> p.getHeightInInches() >= 35 && p.getHeightInInches() <= 40))
-               .count();
+        .filter((p -> p.getHeightInInches() >= 35 && p.getHeightInInches() <= 40))
+        .count();
     System.out.printf("Players in the range 35 - 40 inches: %d players%n", count);
     playersList.stream()
-               .filter((p -> p.getHeightInInches() >= 35 && p.getHeightInInches() <= 40))
-               .forEach(LeagueManager::displayPlayer);
+        .filter((p -> p.getHeightInInches() >= 35 && p.getHeightInInches() <= 40))
+        .forEach(LeagueManager::displayPlayer);
 
     count =  playersList.stream()
         .filter((p -> p.getHeightInInches() >= 41 && p.getHeightInInches() <= 46))
@@ -279,11 +318,15 @@ public class LeagueManager {
         }
         selectedTeam.getTeamPlayers().add(player);
         availablePlayers.remove(player);
+      }else{
+        System.out.printf("The team %s has reached the maximum allowed number of player, which is %s%n",
+            selectedTeam.getName(),
+            MAX_PLAYERS);
       }
     }
   }
 
-  private static Player findPlayer(Scanner scanner) throws ArrayIndexOutOfBoundsException{
+  private static Player findPlayer(Scanner scanner) throws ArrayIndexOutOfBoundsException, NumberFormatException{
     int option;
     System.out.println("Available players");
     int i = 0;
@@ -320,12 +363,17 @@ public class LeagueManager {
   }
 
   private static void createTeam(List<Team> teams, Scanner scanner) {
-    System.out.print("What is the team name? ");
-    String teamName = scanner.nextLine();
-    System.out.print("What is the coach name? ");
-    String coachName = scanner.nextLine();
-    Team team = new Team(teamName, coachName);
-    teams.add(team);
-    System.out.printf("Team %s coached by %s %n%n", teamName, coachName);
+
+    if(availablePlayers.size() < MAX_PLAYERS){
+      System.out.println("The are not enough player for a new team!");
+    }else{
+      System.out.print("What is the team name? ");
+      String teamName = scanner.nextLine();
+      System.out.print("What is the coach name? ");
+      String coachName = scanner.nextLine();
+      Team team = new Team(teamName, coachName);
+      teams.add(team);
+      System.out.printf("Team %s coached by %s %n%n", teamName, coachName);
+    }
   }
 }
