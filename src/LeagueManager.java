@@ -128,44 +128,47 @@ public class LeagueManager {
           }
           break;
         case "build":
-
-          if (availablePlayers.size() < MAX_PLAYERS ){
-            System.out.println("No enough players for a new team building...");
-            System.out.println("Please select another option.");
-            return;
-          }
-
-          Collections.shuffle(availablePlayers);
-
-          System.out.print("What is the team name? ");
-          String teamName = scanner.nextLine();
-          System.out.print("What is the coach name? ");
-          String coachName = scanner.nextLine();
-          Team team = new Team(teamName, coachName);
-          teams.add(team);
-
-          System.out.println("Automatically Team Building...");
-
-          List<Player> availablePlayersCopy = new ArrayList<>(availablePlayers);
-
-          for(Player player : availablePlayersCopy){
-            int inches = player.getHeightInInches();
-            for(Player teamPlayer : team.getTeamPlayers()){
-              inches = inches + teamPlayer.getHeightInInches();
-            }
-            double averageHeight = inches / (team.getTeamPlayers().size() + 1 );
-            if((averageHeight > 42 && averageHeight < 45) && team.getTeamPlayers().size() < MAX_PLAYERS){
-              team.getTeamPlayers().add(player);
-              availablePlayers.remove(player);
-              System.out.printf("Available Players %d%n", availablePlayers.size());
-            }
-          }
-          System.out.printf("Team building for %s completed.%n", team.getName());
+          buildTeamAutomatically(availablePlayers, scanner, teams);
           break;
         case "quit":
           System.out.println("Bye!");
       }
     }
+  }
+
+  private static void buildTeamAutomatically(List<Player> availablePlayers, Scanner scanner, List<Team> teams ){
+    if (availablePlayers.size() < MAX_PLAYERS ){
+      System.out.println("No enough players for a new team building...");
+      System.out.println("Please select another option.");
+      return;
+    }
+
+    Collections.shuffle(availablePlayers);
+
+    System.out.print("What is the team name? ");
+    String teamName = scanner.nextLine();
+    System.out.print("What is the coach name? ");
+    String coachName = scanner.nextLine();
+    Team team = new Team(teamName, coachName);
+    teams.add(team);
+
+    System.out.println("Automatically Team Building...");
+
+    List<Player> availablePlayersCopy = new ArrayList<>(availablePlayers);
+
+    for(Player player : availablePlayersCopy){
+      int inches = player.getHeightInInches();
+      for(Player teamPlayer : team.getTeamPlayers()){
+        inches = inches + teamPlayer.getHeightInInches();
+      }
+      double averageHeight = inches / (team.getTeamPlayers().size() + 1 );
+      if((averageHeight > 42 && averageHeight < 45) && team.getTeamPlayers().size() < MAX_PLAYERS){
+        team.getTeamPlayers().add(player);
+        availablePlayers.remove(player);
+        System.out.printf("Available Players %d%n", availablePlayers.size());
+      }
+    }
+    System.out.printf("Team building for %s completed.%n", team.getName());
   }
 
   private static void replacePlayer(Scanner scanner) throws IndexOutOfBoundsException {
